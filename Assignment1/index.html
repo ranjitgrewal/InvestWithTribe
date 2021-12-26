@@ -1,0 +1,200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="1561.61">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<h1>Choose dates from drop down or enter dates below to </h1>
+
+<form id="holidays" name="holidays">
+    <select id="selector" name="selector">
+        <option value="None">None</option>
+        <option value="Yesterday">Yesterday</option>
+        <option value="LastWeek">Last Week</option>
+        <option value="LastMonth">Last Month</option>
+    </select>
+
+  	  <label for="example">From</label>
+  	  <input id="fromText" type="text" placeholder="2021-12-26" name="fromText">
+          <label for="example">To</label>
+  	  <input id="toText" type="text" placeholder="2021-12-26" name="toText">
+          <input type="button" value="Find Holidays" onclick="myFunction()" accesskey="s">
+</form>
+<p id="p1">
+</p>
+<script>
+function myFunction() {
+		const url = 'https://www.gov.uk/bank-holidays.json';
+     		fetch(url)
+    		.then((response) => {
+      		return response.json();
+   		 })
+    		.then((data) => {
+				holidayData="";
+				eventData="";
+				Arealoop:
+				for(var area in data) {
+					holidayData= holidayData + "<br/>" + (JSON.stringify(data[area].division))  + "<br/>" ;
+					Eventloop:
+					for(var event in data[area].events) {
+						eventDate=(data[area].events[event].date);
+						const edate = new Date(eventDate);
+  						const fromDate = new Date(document.getElementById("fromText").value);
+  						const toDate = new Date (document.getElementById("toText").value);
+						const diffFromTo = (toDate - fromDate);
+						var daysFromTo= Math.trunc(diffFromTo / (1000 * 60 * 60 * 24));
+
+						const diffFromEvent = (fromDate - edate);
+						var daysFromDate= Math.trunc(diffFromEvent / (1000 * 60 * 60 * 24));
+
+						const diffToEvent = ( edate - toDate);
+						var daysToDate= Math.trunc(diffToEvent / (1000 * 60 * 60 * 24));
+						
+						if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
+							eventData="One of the dates is invalid dates";
+							break;
+						} 
+						else {
+						    if (diffFromTo<0){
+							eventData="To date cannot be older than from date, enter valid dates" ;
+							break;
+							}
+							else{
+						   	if ((daysFromDate<=0)){
+								if ((daysToDate<=0)){
+									//eventData="No holidays daysFromDate " + daysFromDate + " todays" + daysToDate;
+									eventData= eventData +  "<br/>" + JSON.stringify(data[area].events[event]);
+									}
+
+						     		}	
+						 
+							}
+						}
+					
+
+						//document.getElementById("fromText").value;
+  					}
+
+					holidayData= holidayData + "<br/>" + eventData + "<br/>" ;
+				}
+				document.getElementById("p1").innerHTML=holidayData;
+			});
+
+
+}
+</script>
+
+</body>
+
+<script type="text/javascript">
+	holidayData = "Choose dates from drop down to see UK holiday data";
+        document.holidays.selector.onchange = updateText;
+    	function updateText() {
+     		 var obj_sel = document.holidays.selector;
+     		 //document.getElementById('populateHolidayData').value = myData[obj_sel.value];
+     		const url = 'https://www.gov.uk/bank-holidays.json';
+     		fetch(url)
+    		.then((response) => {
+      		return response.json();
+   		 })
+    		.then((data) => {
+			if ((obj_sel.value) === "Yesterday"){
+				holidayData="";
+				eventData="";
+				for(var area in data) {
+					holidayData= holidayData + "<br/>" + (JSON.stringify(data[area].division))  + "<br/>" ;
+					for(var event in data[area].events) {
+						eventDate=(data[area].events[event].date);
+						const edate = new Date(eventDate);
+  						const now = new Date();
+  						const diffInMs = (edate - now);
+						var numOfDays= Math.trunc(diffInMs / (1000 * 60 * 60 * 24));
+						if ((numOfDays<0) && (numOfDays> -1)){
+							//eventData= eventData + (JSON.stringify(data[area].events[event])) + "<br/>" ;
+							eventData= eventData +  "<br/>" + JSON.stringify(data[area].events[event]);
+
+						}
+						else
+						{
+						eventData= "No holidays yesterday  ";
+						
+						}
+					}
+
+					holidayData= holidayData + "<br/>" + eventData + "<br/>" ;
+				}
+
+			}
+			else if ((obj_sel.value) === "LastWeek")
+
+			{
+				holidayData="";
+				eventData="";
+				for(var area in data) {
+					holidayData= holidayData + "<br/>" + (JSON.stringify(data[area].division))  + "<br/>" ;
+					for(var event in data[area].events) {
+						eventDate=(data[area].events[event].date);
+						const edate = new Date(eventDate);
+  						const now = new Date();
+  						const diffInMs = (edate - now);
+						var numOfDays= Math.trunc(diffInMs / (1000 * 60 * 60 * 24));
+						if ((numOfDays<0) && (numOfDays> -30)){
+							//eventData= eventData + (JSON.stringify(data[area].events[event])) + "<br/>" ;
+							eventData= eventData +  "<br/>" + JSON.stringify(data[area].events[event]);
+
+						}
+						else
+						{
+						eventData= "No holidays within last week  ";
+						
+						}
+					}
+
+					holidayData= holidayData + "<br/>" + eventData + "<br/>" ;
+				}
+							
+			}
+
+			else if ((obj_sel.value) === "LastMonth")
+
+			{
+				holidayData="";
+				for(var area in data) {
+					holidayData= holidayData + "<br/>" + (JSON.stringify(data[area].division))  + "<br/>" ;
+					eventData="";
+					for(var event in data[area].events) {
+						eventDate=(data[area].events[event].date);
+						const edate = new Date(eventDate);
+  						const now = new Date();
+  						const diffInMs = (edate - now);
+						var numOfDays= Math.trunc(diffInMs / (1000 * 60 * 60 * 24));
+						if ((numOfDays<0)&& (numOfDays>-30)){
+							//eventData= eventData + (JSON.stringify(data[area].events[event])) + "<br/>" ;
+							eventData= eventData +  "<br/>" + JSON.stringify(data[area].events[event]);
+
+						}
+				
+					}
+
+					holidayData= holidayData + "<br/>" + eventData + "<br/>" ;
+				}
+							
+			}
+			else {
+				holidayData = "Choose";
+
+			}
+			document.getElementById("p1").innerHTML=holidayData;
+	    		});			
+		
+	}
+
+
+</script>
+
+</html>
